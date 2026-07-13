@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Apply Internship</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #111, #1a1a1a, #000);
+            color: white; min-height: 100vh;
+            display: flex; align-items: center;
+            justify-content: center; padding: 20px;
+        }
+        .card {
+            background: #1c1c1c; border-radius: 20px;
+            padding: 35px 30px; width: 100%; max-width: 500px;
+            box-shadow: 0 0 25px rgba(255,215,0,0.3);
+            border: 1px solid rgba(255,215,0,0.2);
+        }
+        h2 {
+            color: gold; font-size: 22px;
+            text-align: center; margin-bottom: 25px;
+        }
+        .field-group { margin-bottom: 18px; }
+        .field-label {
+            font-size: 13px; color: #aaa;
+            margin-bottom: 6px; display: block;
+        }
+        .field-input {
+            width: 100%; padding: 12px 14px;
+            background: #2a2a2a; border: 1px solid #444;
+            border-radius: 10px; color: white;
+            font-size: 14px; outline: none;
+            font-family: inherit;
+        }
+        .field-input:focus { border-color: gold; }
+        .internship-info {
+            background: rgba(255,215,0,0.08);
+            border: 1px solid rgba(255,215,0,0.2);
+            border-radius: 10px; padding: 12px 16px;
+            margin-bottom: 20px; font-size: 14px; color: #ccc;
+        }
+        .internship-info strong { color: gold; }
+        .submit-btn {
+            width: 100%; padding: 14px;
+            background: gold; color: black;
+            border: none; border-radius: 30px;
+            font-size: 16px; font-weight: bold;
+            cursor: pointer; margin-top: 8px;
+            transition: background 0.2s;
+        }
+        .submit-btn:hover { background: #ffcc00; }
+        .back-link {
+            display: block; text-align: center;
+            margin-top: 16px; color: #aaa;
+            font-size: 13px; text-decoration: none;
+        }
+        .back-link:hover { color: gold; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h2>📋 Apply Internship</h2>
+
+    <!-- Show internship name if passed -->
+    <div class="internship-info" th:if="${internshipTitle}">
+        Applying for: <strong th:text="${internshipTitle}"></strong>
+        <span th:if="${internshipCompany}">
+            at <strong th:text="${internshipCompany}"></strong>
+        </span>
+    </div>
+
+    <form action="/submitApplication" method="post"
+          enctype="multipart/form-data">
+
+        <div class="field-group">
+            <label class="field-label">Full Name</label>
+            <input type="text" name="name" class="field-input"
+                   placeholder="Enter your full name" required>
+        </div>
+
+        <div class="field-group">
+            <label class="field-label">Email</label>
+            <input type="email" name="email" class="field-input"
+                   placeholder="Enter your email" required>
+        </div>
+
+        <div class="field-group">
+            <label class="field-label">College Name</label>
+            <input type="text" name="college" class="field-input"
+                   placeholder="Enter your college name" required>
+        </div>
+
+        <div class="field-group">
+            <label class="field-label">Upload Resume (PDF)</label>
+            <input type="file" name="resume" class="field-input" accept=".pdf">
+        </div>
+
+        <button type="submit" class="submit-btn">
+            Submit Application ✓
+        </button>
+
+    </form>
+
+    <a href="javascript:history.back()" class="back-link">← Back to Results</a>
+</div>
+</body>
+</html>

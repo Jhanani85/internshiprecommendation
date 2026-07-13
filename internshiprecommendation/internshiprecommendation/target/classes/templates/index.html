@@ -1,0 +1,716 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>PM Internship Scheme</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #0d0d14;
+            color: white;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            width: 260px;
+            min-height: 100vh;
+            background: linear-gradient(180deg, #13131f 0%, #0d0d14 100%);
+            border-right: 1px solid rgba(255,215,0,0.1);
+            display: flex;
+            flex-direction: column;
+            padding: 24px 16px;
+            position: fixed;
+            top: 0; left: 0;
+            overflow-y: auto;
+            z-index: 200;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-brand {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 28px; padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .brand-icon {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; flex-shrink: 0;
+        }
+        .brand-name { font-size: 13px; font-weight: 700; color: #ffd700; line-height: 1.3; }
+        .brand-sub { font-size: 10px; color: #555; margin-top: 2px; }
+
+        .steps-label {
+            font-size: 10px; color: #444; font-weight: 600;
+            letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px;
+        }
+        .step-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 9px 10px; border-radius: 10px;
+            margin-bottom: 4px; cursor: pointer; transition: all 0.2s;
+        }
+        .step-item:hover { background: rgba(255,215,0,0.05); }
+        .step-item.active { background: rgba(255,215,0,0.08); }
+        .step-dot {
+            width: 26px; height: 26px; border-radius: 50%;
+            background: #1a1a28; border: 2px solid #2a2a3a;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 700; color: #555; flex-shrink: 0;
+        }
+        .step-item.active .step-dot { background: rgba(255,215,0,0.15); border-color: #ffd700; color: #ffd700; }
+        .step-title { font-size: 12px; font-weight: 600; color: #ccc; }
+        .step-item.active .step-title { color: #ffd700; }
+        .step-sub-text { font-size: 10px; color: #555; margin-top: 1px; }
+
+        .info-card {
+            background: rgba(74,144,217,0.06);
+            border: 1px solid rgba(74,144,217,0.15);
+            border-radius: 10px; padding: 12px; margin: 16px 0;
+        }
+        .info-title { font-size: 11px; color: #4a90d9; font-weight: 700; margin-bottom: 5px; }
+        .info-text { font-size: 10px; color: #666; line-height: 1.5; }
+
+        .lang-section { margin-top: auto; padding-top: 16px; }
+        .lang-label {
+            font-size: 10px; color: #444; font-weight: 600;
+            letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px;
+        }
+        .lang-grid { display: flex; flex-direction: column; gap: 5px; }
+        .lang-row { display: flex; gap: 5px; }
+        .lang-btn {
+            flex: 1; background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: #888; padding: 7px 4px;
+            border-radius: 7px; cursor: pointer;
+            font-size: 11px; text-align: center; transition: all 0.2s;
+        }
+        .lang-btn:hover { border-color: rgba(255,215,0,0.3); color: #ffd700; }
+        .lang-btn.active { background: rgba(255,215,0,0.1); border-color: #ffd700; color: #ffd700; font-weight: 600; }
+
+        /* Overlay for mobile sidebar */
+        .sidebar-overlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 199;
+        }
+        .sidebar-overlay.visible { display: block; }
+
+        /* ── MAIN CONTENT ── */
+        .main-content { margin-left: 260px; flex: 1; }
+
+        .progress-bar { height: 3px; background: rgba(255,255,255,0.05); }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffd700, #ffaa00);
+            width: 0%; transition: width 0.4s ease;
+        }
+
+        .topbar {
+            background: rgba(255,255,255,0.02);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding: 14px 28px;
+            display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 50;
+            backdrop-filter: blur(10px);
+        }
+        .topbar-left { display: flex; align-items: center; gap: 12px; }
+        .hamburger {
+            display: none;
+            background: transparent;
+            border: 1px solid rgba(255,215,0,0.3);
+            color: #ffd700; width: 36px; height: 36px;
+            border-radius: 8px; cursor: pointer;
+            font-size: 16px; align-items: center; justify-content: center;
+        }
+        .topbar-title { font-size: 15px; font-weight: 600; color: #ccc; }
+        .topbar-title span { color: #ffd700; }
+        .topbar-badge {
+            background: rgba(255,215,0,0.1);
+            border: 1px solid rgba(255,215,0,0.2);
+            color: #ffd700; padding: 4px 12px;
+            border-radius: 20px; font-size: 12px;
+        }
+        .user-info {
+            display: flex; align-items: center; gap: 10px;
+        }
+        .user-name {
+            background: rgba(255,215,0,0.08);
+            border: 1px solid rgba(255,215,0,0.2);
+            color: #ffd700; padding: 4px 12px;
+            border-radius: 20px; font-size: 12px;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .logout-btn {
+            background: transparent;
+            border: 1px solid rgba(255,80,80,0.3);
+            color: #ff6b6b; padding: 4px 12px;
+            border-radius: 20px; font-size: 12px;
+            cursor: pointer; text-decoration: none;
+            transition: all 0.2s;
+        }
+        .logout-btn:hover { background: rgba(255,80,80,0.1); }
+
+        .form-area { padding: 24px 28px; max-width: 820px; }
+
+        .section-block {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 14px; padding: 22px 24px; margin-bottom: 18px;
+        }
+        .section-block:hover { border-color: rgba(255,215,0,0.1); }
+
+        .section-head { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+        .section-icon {
+            width: 32px; height: 32px;
+            background: rgba(255,215,0,0.08);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px;
+        }
+        .section-title { font-size: 14px; font-weight: 700; color: #ffd700; }
+        .section-desc { font-size: 11px; color: #555; margin-top: 1px; }
+
+        .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+        .field-row.single { grid-template-columns: 1fr; }
+        .field-label { font-size: 12px; color: #888; margin-bottom: 6px; display: block; font-weight: 500; }
+        .field-input {
+            width: 100%; padding: 12px 13px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 9px; color: white; font-size: 14px;
+            outline: none; font-family: inherit; transition: border-color 0.2s;
+        }
+        .field-input:focus { border-color: #ffd700; }
+        .field-input::placeholder { color: #3a3a4a; }
+        select.field-input option { background: #1a1a2e; }
+
+        .chip-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+        .chip { position: relative; }
+        .chip input { position: absolute; opacity: 0; width: 0; height: 0; }
+        .chip label {
+            display: flex; align-items: center; gap: 5px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px; padding: 9px 14px;
+            cursor: pointer; font-size: 13px; color: #777;
+            transition: all 0.2s; user-select: none;
+            min-height: 40px;
+        }
+        .chip input[type="checkbox"]:checked + label {
+            background: rgba(255,215,0,0.1); border-color: #ffd700; color: #ffd700; font-weight: 600;
+        }
+        .chip input[type="radio"]:checked + label {
+            background: rgba(74,144,217,0.12); border-color: #4a90d9; color: #4a90d9; font-weight: 600;
+        }
+        .chip label:hover { border-color: rgba(255,215,0,0.3); color: #ffd700; }
+
+        .field-hint { font-size: 11px; color: #555; margin-bottom: 10px; }
+
+        .submit-area { padding: 0 28px 32px; }
+        .submit-btn {
+            width: 100%; max-width: 820px; padding: 16px;
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            color: #000; border: none; border-radius: 12px;
+            font-size: 16px; font-weight: 700; cursor: pointer;
+            transition: all 0.2s; min-height: 52px;
+        }
+        .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(255,215,0,0.25); }
+
+        /* ── MOBILE STYLES ── */
+        @media (max-width: 768px) {
+            body { display: block; }
+
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+
+            .main-content { margin-left: 0; }
+
+            .hamburger { display: flex; }
+
+            .topbar { padding: 12px 16px; }
+            .topbar-title { font-size: 13px; }
+            .topbar-badge { font-size: 11px; padding: 3px 9px; }
+
+            .form-area { padding: 14px 14px; }
+            .submit-area { padding: 0 14px 24px; }
+
+            .field-row { grid-template-columns: 1fr; gap: 12px; }
+
+            .section-block { padding: 16px; }
+            .section-title { font-size: 13px; }
+
+            .chip label { font-size: 12px; padding: 10px 12px; min-height: 44px; }
+
+            .field-input { font-size: 16px; padding: 13px; }
+
+            .submit-btn { font-size: 15px; padding: 15px; }
+        }
+
+        @media (max-width: 400px) {
+            .chip label { font-size: 11px; padding: 9px 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Mobile overlay -->
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+
+    <div class="sidebar-brand">
+        <div class="brand-icon">🎓</div>
+        <div>
+            <div class="brand-name"
+                 data-en="PM Internship Scheme"
+                 data-hi="पीएम इंटर्नशिप योजना"
+                 data-ta="பிஎம் இன்டர்ன்ஷிப்"
+                 data-te="పిఎం ఇంటర్న్‌షిప్"
+                 data-kn="ಪಿಎಂ ಇಂಟರ್ನ್‌ಶಿಪ್"
+                 data-ml="പിഎം ഇന്റേൺഷിപ്പ്">PM Internship Scheme</div>
+            <div class="brand-sub"
+                 data-en="AI Recommendation Portal"
+                 data-hi="AI अनुशंसा पोर्टल"
+                 data-ta="AI பரிந்துரை போர்டல்"
+                 data-te="AI సిఫార్సు పోర్టల్"
+                 data-kn="AI ಶಿಫಾರಸು ಪೋರ್ಟಲ್"
+                 data-ml="AI ശുപാർശ പോർട്ടൽ">AI Recommendation Portal</div>
+        </div>
+    </div>
+
+    <div class="steps-label"
+         data-en="Application Steps" data-hi="आवेदन चरण"
+         data-ta="விண்ணப்ப படிகள்" data-te="దరఖాస్తు దశలు"
+         data-kn="ಅರ್ಜಿ ಹಂತಗಳು" data-ml="അപേക്ഷ ഘട്ടങ്ങൾ">Application Steps</div>
+
+    <div class="step-item active" onclick="scrollToSection('personal');closeSidebar()">
+        <div class="step-dot">1</div>
+        <div>
+            <div class="step-title"
+                 data-en="Personal Info" data-hi="व्यक्तिगत जानकारी"
+                 data-ta="தனிப்பட்ட தகவல்" data-te="వ్యక్తిగత సమాచారం"
+                 data-kn="ವೈಯಕ್ತಿಕ ಮಾಹಿತಿ" data-ml="വ്യക്തിഗത വിവരം">Personal Info</div>
+            <div class="step-sub-text"
+                 data-en="Name, email, mobile" data-hi="नाम, ईमेल, मोबाइल"
+                 data-ta="பெயர், மின்னஞ்சல்" data-te="పేరు, ఇమెయిల్"
+                 data-kn="ಹೆಸರು, ಇಮೇಲ್" data-ml="പേര്, ഇമെയിൽ">Name, email, mobile</div>
+        </div>
+    </div>
+
+    <div class="step-item" onclick="scrollToSection('academic');closeSidebar()">
+        <div class="step-dot">2</div>
+        <div>
+            <div class="step-title"
+                 data-en="Academic Details" data-hi="शैक्षणिक विवरण"
+                 data-ta="கல்வி விவரங்கள்" data-te="విద్యా వివరాలు"
+                 data-kn="ಶೈಕ್ಷಣಿಕ ವಿವರಗಳು" data-ml="അക്കാദമിക് വിവരങ്ങൾ">Academic Details</div>
+            <div class="step-sub-text"
+                 data-en="College, dept, year" data-hi="कॉलेज, विभाग, वर्ष"
+                 data-ta="கல்லூரி, துறை" data-te="కళాశాల, విభాగం"
+                 data-kn="ಕಾಲೇಜು, ವಿಭಾಗ" data-ml="കോളേജ്, വകുപ്പ്">College, dept, year</div>
+        </div>
+    </div>
+
+    <div class="step-item" onclick="scrollToSection('skills');closeSidebar()">
+        <div class="step-dot">3</div>
+        <div>
+            <div class="step-title"
+                 data-en="Skills & Sector" data-hi="कौशल और क्षेत्र"
+                 data-ta="திறன்கள் மற்றும் துறை" data-te="నైపుణ్యాలు మరియు రంగం"
+                 data-kn="ಕೌಶಲ್ಯ ಮತ್ತು ವಲಯ" data-ml="കഴിവുകളും മേഖലയും">Skills & Sector</div>
+            <div class="step-sub-text"
+                 data-en="Your technical skills" data-hi="तकनीकी कौशल"
+                 data-ta="தொழில்நுட்ப திறன்கள்" data-te="సాంకేతిక నైపుణ్యాలు"
+                 data-kn="ತಾಂತ್ರಿಕ ಕೌಶಲ್ಯಗಳು" data-ml="സാങ്കേതിക കഴിവുകൾ">Your technical skills</div>
+        </div>
+    </div>
+
+    <div class="step-item" onclick="scrollToSection('location');closeSidebar()">
+        <div class="step-dot">4</div>
+        <div>
+            <div class="step-title"
+                 data-en="Location" data-hi="स्थान"
+                 data-ta="இடம்" data-te="స్థానం"
+                 data-kn="ಸ್ಥಳ" data-ml="സ്ഥലം">Location</div>
+            <div class="step-sub-text"
+                 data-en="Preferred work city" data-hi="पसंदीदा शहर"
+                 data-ta="விரும்பிய நகரம்" data-te="ఇష్టమైన నగరం"
+                 data-kn="ಆದ್ಯತೆಯ ನಗರ" data-ml="ഇഷ്ടപ്പെട്ട നഗരം">Preferred work city</div>
+        </div>
+    </div>
+
+    <div class="info-card">
+        <div class="info-title">💡 <span
+                data-en="How it works" data-hi="यह कैसे काम करता है"
+                data-ta="இது எவ்வாறு செயல்படுகிறது" data-te="ఇది ఎలా పని చేస్తుంది"
+                data-kn="ಇದು ಹೇಗೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ" data-ml="ഇത് എങ്ങനെ പ്രവർത്തിക്കുന്നു">How it works</span></div>
+        <div class="info-text"
+             data-en="Fill your profile → AI matches your skills → Get 3-5 personalized results"
+             data-hi="प्रोफाइल भरें → AI मिलाता है → 3-5 परिणाम पाएं"
+             data-ta="சுயவிவரம் நிரப்பு → AI பொருத்துகிறது → 3-5 முடிவுகள்"
+             data-te="ప్రొఫైల్ నింపండి → AI సరిపోల్చుతుంది → 3-5 ఫలితాలు"
+             data-kn="ಪ್ರೊಫೈಲ್ ತುಂಬಿಸಿ → AI ಹೊಂದಿಸುತ್ತದೆ → 3-5 ಫಲಿತಾಂಶ"
+             data-ml="പ്രൊഫൈൽ നിരത്തൂ → AI പൊരുത്തപ്പെടുത്തുന്നു → 3-5 ഫലങ്ങൾ">
+            Fill your profile → AI matches your skills → Get 3-5 personalized results
+        </div>
+    </div>
+
+    <div class="lang-section">
+        <div class="lang-label"
+             data-en="Language" data-hi="भाषा" data-ta="மொழி"
+             data-te="భాష" data-kn="ಭಾಷೆ" data-ml="ഭാഷ">Language</div>
+        <div class="lang-grid">
+            <div class="lang-row">
+                <button class="lang-btn active" onclick="setLang('en')" id="btn-en">English</button>
+                <button class="lang-btn" onclick="setLang('hi')" id="btn-hi">हिंदी</button>
+            </div>
+            <div class="lang-row">
+                <button class="lang-btn" onclick="setLang('ta')" id="btn-ta">தமிழ்</button>
+                <button class="lang-btn" onclick="setLang('te')" id="btn-te">తెలుగు</button>
+            </div>
+            <div class="lang-row">
+                <button class="lang-btn" onclick="setLang('kn')" id="btn-kn">ಕನ್ನಡ</button>
+                <button class="lang-btn" onclick="setLang('ml')" id="btn-ml">മലയാളം</button>
+            </div>
+        </div>
+    </div>
+
+</aside>
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="topbar">
+        <div class="topbar-left">
+            <button class="hamburger" onclick="openSidebar()" id="hamburger">☰</button>
+            <div class="topbar-title">
+                <span data-en="Find Your Internship"
+                      data-hi="अपनी इंटर्नशिप खोजें"
+                      data-ta="உங்கள் இன்டர்ன்ஷிப் கண்டறியுங்கள்"
+                      data-te="మీ ఇంటర్న్‌షిప్ కనుగొనండి"
+                      data-kn="ನಿಮ್ಮ ಇಂಟರ್ನ್‌ಶಿಪ್ ಹುಡುಕಿ"
+                      data-ml="നിങ്ങളുടെ ഇന്റേൺഷിപ്പ് കണ്ടെത്തൂ">Find Your Internship</span>
+            </div>
+        </div>
+        <div class="user-info">
+            <div class="topbar-badge">
+                🤖 <span data-en="AI Powered" data-hi="AI संचालित"
+                        data-ta="AI இயங்கும்" data-te="AI ఆధారిత"
+                        data-kn="AI ಚಾಲಿತ" data-ml="AI ഊർജിത">AI Powered</span>
+            </div>
+            <div class="user-name">
+                👤 <span th:text="${loggedInName}">User</span>
+            </div>
+            <a href="/logout" class="logout-btn"
+               data-en="Logout" data-hi="लॉगआउट"
+               data-ta="வெளியேறு" data-te="లాగౌట్"
+               data-kn="ಲಾಗ್‌ಔಟ್" data-ml="ലോഗൗട്ട്">Logout</a>
+        </div>
+    </div>
+
+
+    <form action="/register" method="post" id="regForm">
+        <input type="hidden" name="skills" id="skillsHidden">
+
+        <div class="form-area">
+
+            <!-- Personal -->
+            <div class="section-block" id="personal">
+                <div class="section-head">
+                    <div class="section-icon">👤</div>
+                    <div>
+                        <div class="section-title"
+                             data-en="Personal Information" data-hi="व्यक्तिगत जानकारी"
+                             data-ta="தனிப்பட்ட தகவல்" data-te="వ్యక్తిగత సమాచారం"
+                             data-kn="ವೈಯಕ್ತಿಕ ಮಾಹಿತಿ" data-ml="വ്യക്തിഗത വിവരം">Personal Information</div>
+                        <div class="section-desc"
+                             data-en="Basic contact details" data-hi="बुनियादी संपर्क विवरण"
+                             data-ta="அடிப்படை தொடர்பு விவரங்கள்" data-te="ప్రాథమిక సంప్రదింపు వివరాలు"
+                             data-kn="ಮೂಲ ಸಂಪರ್ಕ ವಿವರಗಳು" data-ml="അടിസ്ഥാന ബന്ധപ്പെടൽ വിവരങ്ങൾ">Basic contact details</div>
+                    </div>
+                </div>
+                <div class="field-row">
+                    <div>
+                        <label class="field-label"
+                               data-en="Full Name" data-hi="पूरा नाम"
+                               data-ta="முழு பெயர்" data-te="పూర్తి పేరు"
+                               data-kn="ಪೂರ್ಣ ಹೆಸರು" data-ml="പൂർണ്ണ നാമം">Full Name</label>
+                        <input type="text" name="name" class="field-input" required
+                               data-ph-en="Enter your full name" data-ph-hi="पूरा नाम दर्ज करें"
+                               data-ph-ta="உங்கள் முழு பெயர்" data-ph-te="మీ పూర్తి పేరు"
+                               data-ph-kn="ನಿಮ್ಮ ಪೂರ್ಣ ಹೆಸರು" data-ph-ml="പൂർണ്ണ നാമം"
+                               placeholder="Enter your full name">
+                    </div>
+                    <div>
+                        <label class="field-label"
+                               data-en="Mobile Number" data-hi="मोबाइल नंबर"
+                               data-ta="மொபைல் எண்" data-te="మొబైల్ నంబర్"
+                               data-kn="ಮೊಬೈಲ್ ಸಂಖ್ಯೆ" data-ml="മൊബൈൽ നമ്പർ">Mobile Number</label>
+                        <input type="text" name="mobile" class="field-input" required
+                               data-ph-en="10-digit number" data-ph-hi="10 अंकों का नंबर"
+                               data-ph-ta="10 இலக்க எண்" data-ph-te="10 అంకెల నంబర్"
+                               data-ph-kn="10 ಅಂಕಿ ಸಂಖ್ಯೆ" data-ph-ml="10 അക്ക നമ്പർ"
+                               placeholder="10-digit number">
+                    </div>
+                </div>
+                <div class="field-row single">
+                    <div>
+                        <label class="field-label"
+                               data-en="Email Address" data-hi="ईमेल पता"
+                               data-ta="மின்னஞ்சல்" data-te="ఇమెయిల్"
+                               data-kn="ಇಮೇಲ್" data-ml="ഇമെയിൽ">Email Address</label>
+                        <input type="email" name="email" class="field-input" required
+                               data-ph-en="Enter your email" data-ph-hi="ईमेल दर्ज करें"
+                               data-ph-ta="மின்னஞ்சல் உள்ளிடுங்கள்" data-ph-te="ఇమెయిల్ నమోదు చేయండి"
+                               data-ph-kn="ಇಮೇಲ್ ನಮೂದಿಸಿ" data-ph-ml="ഇമെയിൽ നൽകുക"
+                               placeholder="Enter your email">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Academic -->
+            <div class="section-block" id="academic">
+                <div class="section-head">
+                    <div class="section-icon">🏫</div>
+                    <div>
+                        <div class="section-title"
+                             data-en="Academic Details" data-hi="शैक्षणिक विवरण"
+                             data-ta="கல்வி விவரங்கள்" data-te="విద్యా వివరాలు"
+                             data-kn="ಶೈಕ್ಷಣಿಕ ವಿವರಗಳು" data-ml="അക്കാദമിക് വിവരങ്ങൾ">Academic Details</div>
+                        <div class="section-desc"
+                             data-en="College and course info" data-hi="कॉलेज और कोर्स की जानकारी"
+                             data-ta="கல்லூரி மற்றும் படிப்பு" data-te="కళాశాల మరియు కోర్సు"
+                             data-kn="ಕಾಲೇಜು ಮತ್ತು ಕೋರ್ಸ್" data-ml="കോളേജ്, കോഴ്സ്">College and course info</div>
+                    </div>
+                </div>
+                <div class="field-row single" style="margin-bottom:14px">
+                    <div>
+                        <label class="field-label"
+                               data-en="College Name" data-hi="कॉलेज का नाम"
+                               data-ta="கல்லூரி பெயர்" data-te="కళాశాల పేరు"
+                               data-kn="ಕಾಲೇಜು ಹೆಸರು" data-ml="കോളേജ് പേര്">College Name</label>
+                        <input type="text" name="college" class="field-input" required
+                               data-ph-en="Enter your college name" data-ph-hi="कॉलेज का नाम"
+                               data-ph-ta="கல்லூரி பெயர்" data-ph-te="కళాశాల పేరు"
+                               data-ph-kn="ಕಾಲೇಜು ಹೆಸರು" data-ph-ml="കോളേജ് പേര്"
+                               placeholder="Enter your college name">
+                    </div>
+                </div>
+                <div class="field-row">
+                    <div>
+                        <label class="field-label"
+                               data-en="Department / Branch" data-hi="विभाग / शाखा"
+                               data-ta="துறை / கிளை" data-te="విభాగం / శాఖ"
+                               data-kn="ವಿಭಾಗ / ಶಾಖೆ" data-ml="വകുപ്പ് / ശാഖ">Department / Branch</label>
+                        <input type="text" name="department" class="field-input" required
+                               data-ph-en="e.g. ECE, CSE, IT" data-ph-hi="जैसे ECE, CSE"
+                               data-ph-ta="எ.கா. ECE, CSE" data-ph-te="ఉదా. ECE, CSE"
+                               data-ph-kn="ಉದಾ. ECE, CSE" data-ph-ml="ഉദാ. ECE, CSE"
+                               placeholder="e.g. ECE, CSE, IT">
+                    </div>
+                    <div>
+                        <label class="field-label"
+                               data-en="Year of Study" data-hi="अध्ययन वर्ष"
+                               data-ta="படிக்கும் ஆண்டு" data-te="చదువు సంవత్సరం"
+                               data-kn="ಅಧ್ಯಯನ ವರ್ಷ" data-ml="പഠന വർഷം">Year of Study</label>
+                        <select name="year" class="field-input">
+                            <option value="1st Year">1st Year</option>
+                            <option value="2nd Year">2nd Year</option>
+                            <option value="3rd Year" selected>3rd Year</option>
+                            <option value="4th Year">4th Year</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Skills -->
+            <div class="section-block" id="skills">
+                <div class="section-head">
+                    <div class="section-icon">💡</div>
+                    <div>
+                        <div class="section-title"
+                             data-en="Skills & Preferred Sector"
+                             data-hi="कौशल और पसंदीदा क्षेत्र"
+                             data-ta="திறன்கள் மற்றும் விரும்பிய துறை"
+                             data-te="నైపుణ్యాలు మరియు ఇష్టమైన రంగం"
+                             data-kn="ಕೌಶಲ್ಯಗಳು ಮತ್ತು ಆದ್ಯತೆಯ ವಲಯ"
+                             data-ml="കഴിവുകളും ഇഷ്ടപ്പെട്ട മേഖലയും">Skills & Preferred Sector</div>
+                        <div class="section-desc"
+                             data-en="Select all that apply"
+                             data-hi="सभी लागू विकल्प चुनें"
+                             data-ta="பொருந்தும் அனைத்தையும் தேர்ந்தெடுங்கள்"
+                             data-te="వర్తించే అన్నీ ఎంచుకోండి"
+                             data-kn="ಅನ್ವಯಿಸುವ ಎಲ್ಲವನ್ನೂ ಆಯ್ಕೆ ಮಾಡಿ"
+                             data-ml="ബാധകമായ എല്ലാം തിരഞ്ഞെടുക്കുക">Select all that apply</div>
+                    </div>
+                </div>
+                <div class="field-hint"
+                     data-en="🔧 Technical Skills — select all you know:"
+                     data-hi="🔧 तकनीकी कौशल — जो भी जानते हैं चुनें:"
+                     data-ta="🔧 தொழில்நுட்ப திறன்கள்:"
+                     data-te="🔧 సాంకేతిక నైపుణ్యాలు:"
+                     data-kn="🔧 ತಾಂತ್ರಿಕ ಕೌಶಲ್ಯಗಳು:"
+                     data-ml="🔧 സാങ്കേതിക കഴിവുകൾ:">🔧 Technical Skills — select all you know:</div>
+                <div class="chip-grid" style="margin-bottom:18px">
+                    <div class="chip"><input type="checkbox" name="skillsSelected" value="Java" id="sk1"><label for="sk1">☕ Java</label></div>
+                    <div class="chip"><input type="checkbox" name="skillsSelected" value="Python" id="sk2"><label for="sk2">🐍 Python</label></div>
+                    <div class="chip"><input type="checkbox" name="skillsSelected" value="SQL" id="sk3"><label for="sk3">🗄️ SQL</label></div>
+                    <div class="chip"><input type="checkbox" name="skillsSelected" value="Cloud" id="sk4"><label for="sk4">☁️ Cloud</label></div>
+                    <div class="chip"><input type="checkbox" name="skillsSelected" value="AI" id="sk5"><label for="sk5">🤖 AI</label></div>
+                    <div class="chip"><input type="checkbox" name="skillsSelected" value="Machine Learning" id="sk6"><label for="sk6">📊 ML</label></div>
+                    <div class="chip"><input type="checkbox" name="skillsSelected" value="Web Development" id="sk7"><label for="sk7">🌐 Web Dev</label></div>
+                    <div class="chip"><input type="checkbox" name="skillsSelected" value="Cyber Security" id="sk8"><label for="sk8">🔐 Cyber Security</label></div>
+                    <div class="chip"><input type="checkbox" name="skillsSelected" value="HTML" id="sk9"><label for="sk9">🏷️ HTML</label></div>
+                    <div class="chip"><input type="checkbox" name="skillsSelected" value="CSS" id="sk10"><label for="sk10">🎨 CSS</label></div>
+                    <div class="chip"><input type="checkbox" name="skillsSelected" value="UI/UX" id="sk11"><label for="sk11">✏️ UI/UX</label></div>
+                </div>
+                <div class="field-hint"
+                     data-en="🎯 Preferred Sector — pick one:"
+                     data-hi="🎯 पसंदीदा क्षेत्र — एक चुनें:"
+                     data-ta="🎯 விரும்பிய துறை — ஒன்று தேர்ந்தெடுங்கள்:"
+                     data-te="🎯 ఇష్టమైన రంగం — ఒకటి ఎంచుకోండి:"
+                     data-kn="🎯 ಆದ್ಯತೆಯ ವಲಯ — ಒಂದನ್ನು ಆಯ್ಕೆ ಮಾಡಿ:"
+                     data-ml="🎯 ഇഷ്ടപ്പെട്ട മേഖല — ഒന്ന് തിരഞ്ഞെടുക്കുക:">🎯 Preferred Sector — pick one:</div>
+                <div class="chip-grid">
+                    <div class="chip"><input type="radio" name="sector" value="Cloud Computing" id="sec1"><label for="sec1">☁️ Cloud Computing</label></div>
+                    <div class="chip"><input type="radio" name="sector" value="AI" id="sec2"><label for="sec2">🤖 AI</label></div>
+                    <div class="chip"><input type="radio" name="sector" value="Web Development" id="sec3"><label for="sec3">🌐 Web Development</label></div>
+                    <div class="chip"><input type="radio" name="sector" value="UI/UX Designer" id="sec4"><label for="sec4">✏️ UI/UX Designer</label></div>
+                    <div class="chip"><input type="radio" name="sector" value="Cyber Security" id="sec5"><label for="sec5">🔐 Cyber Security</label></div>
+                    <div class="chip"><input type="radio" name="sector" value="AI/ML Engineer" id="sec6"><label for="sec6">📊 AI/ML Engineer</label></div>
+                </div>
+            </div>
+
+            <!-- Location -->
+            <div class="section-block" id="location">
+                <div class="section-head">
+                    <div class="section-icon">📍</div>
+                    <div>
+                        <div class="section-title"
+                             data-en="Preferred Location" data-hi="पसंदीदा स्थान"
+                             data-ta="விரும்பிய இடம்" data-te="ఇష్టమైన స్థానం"
+                             data-kn="ಆದ್ಯತೆಯ ಸ್ಥಳ" data-ml="ഇഷ്ടപ്പെട്ട സ്ഥലം">Preferred Location</div>
+                        <div class="section-desc"
+                             data-en="Where do you want to intern?"
+                             data-hi="आप कहाँ इंटर्नशिप करना चाहते हैं?"
+                             data-ta="நீங்கள் எங்கே இன்டர்ன்ஷிப் செய்ய விரும்புகிறீர்கள்?"
+                             data-te="మీరు ఎక్కడ ఇంటర్న్‌షిప్ చేయాలనుకుంటున్నారు?"
+                             data-kn="ನೀವು ಎಲ್ಲಿ ಇಂಟರ್ನ್‌ಶಿಪ್ ಮಾಡಲು ಬಯಸುತ್ತೀರಿ?"
+                             data-ml="നിങ്ങൾ എവിടെ ഇന്റേൺഷിപ്പ് ചെയ്യാൻ ആഗ്രഹിക്കുന്നു?">Where do you want to intern?</div>
+                    </div>
+                </div>
+                <div class="chip-grid">
+                    <div class="chip"><input type="radio" name="location" value="Chennai" id="loc1"><label for="loc1">🏙️ Chennai</label></div>
+                    <div class="chip"><input type="radio" name="location" value="Bangalore" id="loc2"><label for="loc2">🏙️ Bangalore</label></div>
+                    <div class="chip"><input type="radio" name="location" value="Hyderabad" id="loc3"><label for="loc3">🏙️ Hyderabad</label></div>
+                    <div class="chip"><input type="radio" name="location" value="Pune" id="loc4"><label for="loc4">🏙️ Pune</label></div>
+                    <div class="chip"><input type="radio" name="location" value="Remote" id="loc5">
+                        <label for="loc5"
+                               data-en="🏠 Remote" data-hi="🏠 दूरस्थ"
+                               data-ta="🏠 தொலைநிலை" data-te="🏠 రిమోట్"
+                               data-kn="🏠 ರಿಮೋಟ್" data-ml="🏠 റിമോട്ട്">🏠 Remote</label>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="submit-area">
+            <button type="submit" class="submit-btn"
+                    data-en="🔍 Find My Internships"
+                    data-hi="🔍 मेरी इंटर्नशिप खोजें"
+                    data-ta="🔍 என் இன்டர்ன்ஷிப் கண்டறி"
+                    data-te="🔍 నా ఇంటర్న్‌షిప్‌లు కనుగొనండి"
+                    data-kn="🔍 ನನ್ನ ಇಂಟರ್ನ್‌ಶಿಪ್ ಹುಡುಕಿ"
+                    data-ml="🔍 എന്റെ ഇന്റേൺഷിപ്പ് കണ്ടെത്തൂ">
+                🔍 Find My Internships
+            </button>
+        </div>
+
+    </form>
+</div>
+
+<script>
+    const LANGS = ['en','hi','ta','te','kn','ml'];
+
+    function openSidebar() {
+        document.getElementById('sidebar').classList.add('open');
+        document.getElementById('overlay').classList.add('visible');
+    }
+    function closeSidebar() {
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('overlay').classList.remove('visible');
+    }
+
+    function updateProgress() {
+        const inputs = document.querySelectorAll('input[required]');
+        let filled = 0;
+        inputs.forEach(inp => { if (inp.value.trim()) filled++; });
+        document.getElementById('progressFill').style.width =
+            Math.round((filled / inputs.length) * 100) + '%';
+    }
+    document.querySelectorAll('input, select').forEach(el => {
+        el.addEventListener('input', updateProgress);
+        el.addEventListener('change', updateProgress);
+    });
+
+    function scrollToSection(id) {
+        document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.querySelectorAll('.step-item').forEach(s => s.classList.remove('active'));
+        const map = { personal: 0, academic: 1, skills: 2, location: 3 };
+        document.querySelectorAll('.step-item')[map[id]].classList.add('active');
+    }
+
+    window.addEventListener('scroll', () => {
+        ['personal','academic','skills','location'].forEach((id, i) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const rect = el.getBoundingClientRect();
+            if (rect.top <= 120 && rect.bottom > 120) {
+                document.querySelectorAll('.step-item').forEach(s => s.classList.remove('active'));
+                document.querySelectorAll('.step-item')[i].classList.add('active');
+            }
+        });
+    });
+
+    function setLang(lang) {
+        document.querySelectorAll('[data-en]').forEach(el => {
+            const val = el.getAttribute('data-' + lang);
+            if (!val) return;
+            if (el.tagName === 'BUTTON') el.textContent = val;
+            else if (el.tagName !== 'INPUT' && el.tagName !== 'SELECT') el.textContent = val;
+        });
+        document.querySelectorAll('[data-ph-' + lang + ']').forEach(el => {
+            el.placeholder = el.getAttribute('data-ph-' + lang);
+        });
+        LANGS.forEach(l => {
+            const btn = document.getElementById('btn-' + l);
+            if (btn) btn.classList.toggle('active', l === lang);
+        });
+        localStorage.setItem('lang', lang);
+    }
+
+    window.onload = function() {
+        const saved = localStorage.getItem('lang');
+        if (saved && LANGS.includes(saved)) setLang(saved);
+    };
+
+    document.getElementById('regForm').addEventListener('submit', function() {
+        const checked = document.querySelectorAll('input[name="skillsSelected"]:checked');
+        document.getElementById('skillsHidden').value =
+            Array.from(checked).map(cb => cb.value).join(',');
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>PM Internship Scheme — Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #0d0d14;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(255,215,0,0.06), transparent);
+            top: -150px; left: -150px;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        body::after {
+            content: '';
+            position: fixed;
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(74,144,217,0.06), transparent);
+            bottom: -100px; right: -100px;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .lang-bar {
+            position: fixed; top: 16px; right: 16px;
+            display: flex; flex-wrap: wrap; gap: 6px; z-index: 100;
+        }
+        .lang-btn {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,215,0,0.2);
+            color: #888; padding: 5px 10px;
+            border-radius: 15px; cursor: pointer;
+            font-size: 11px; transition: all 0.2s;
+        }
+        .lang-btn:hover, .lang-btn.active {
+            background: rgba(255,215,0,0.1);
+            border-color: #ffd700; color: #ffd700; font-weight: 600;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,215,0,0.12);
+            border-radius: 20px;
+            padding: 36px 32px;
+            width: 100%; max-width: 420px;
+            position: relative; z-index: 1;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .brand {
+            text-align: center; margin-bottom: 28px;
+        }
+        .brand-icon {
+            width: 56px; height: 56px;
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            border-radius: 16px; margin: 0 auto 12px;
+            display: flex; align-items: center;
+            justify-content: center; font-size: 26px;
+        }
+        .brand-name {
+            font-size: 18px; font-weight: 700;
+            color: #ffd700; margin-bottom: 4px;
+        }
+        .brand-sub { font-size: 12px; color: #555; }
+
+        .tabs {
+            display: flex;
+            background: rgba(255,255,255,0.04);
+            border-radius: 10px; padding: 4px;
+            margin-bottom: 24px;
+        }
+        .tab-btn {
+            flex: 1; padding: 9px; border: none;
+            border-radius: 7px; background: transparent;
+            color: #666; font-size: 14px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .tab-btn.active { background: #ffd700; color: #000; }
+
+        .form-section { display: none; }
+        .form-section.active { display: block; }
+
+        .field-group { margin-bottom: 14px; }
+        .field-label {
+            font-size: 12px; color: #888;
+            margin-bottom: 6px; display: block; font-weight: 500;
+        }
+        .field-input {
+            width: 100%; padding: 12px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 9px; color: white;
+            font-size: 14px; outline: none;
+            font-family: inherit; transition: border-color 0.2s;
+        }
+        .field-input:focus { border-color: #ffd700; }
+        .field-input::placeholder { color: #3a3a4a; }
+
+        .error-msg {
+            background: rgba(255,80,80,0.08);
+            border: 1px solid rgba(255,80,80,0.25);
+            color: #ff6b6b; padding: 10px 14px;
+            border-radius: 8px; font-size: 13px;
+            margin-bottom: 16px;
+        }
+
+        .success-msg {
+            background: rgba(0,200,100,0.08);
+            border: 1px solid rgba(0,200,100,0.25);
+            color: #00c864; padding: 10px 14px;
+            border-radius: 8px; font-size: 13px;
+            margin-bottom: 16px;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .submit-btn {
+            width: 100%; padding: 13px;
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            color: #000; border: none; border-radius: 10px;
+            font-size: 15px; font-weight: 700;
+            cursor: pointer; margin-top: 6px;
+            transition: all 0.2s;
+        }
+        .submit-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(255,215,0,0.25);
+        }
+
+        .switch-link {
+            text-align: center; font-size: 13px;
+            color: #555; margin-top: 18px;
+        }
+        .switch-link a {
+            color: #ffd700; text-decoration: none; font-weight: 600;
+        }
+        .switch-link a:hover { text-decoration: underline; }
+
+        @media (max-width: 480px) {
+            .card { padding: 24px 18px; }
+            .lang-bar { top: 10px; right: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="lang-bar">
+    <button class="lang-btn active" onclick="setLang('en')" id="btn-en">EN</button>
+    <button class="lang-btn" onclick="setLang('hi')" id="btn-hi">हि</button>
+    <button class="lang-btn" onclick="setLang('ta')" id="btn-ta">த</button>
+    <button class="lang-btn" onclick="setLang('te')" id="btn-te">తె</button>
+    <button class="lang-btn" onclick="setLang('kn')" id="btn-kn">ಕ</button>
+    <button class="lang-btn" onclick="setLang('ml')" id="btn-ml">മ</button>
+</div>
+
+<div class="card">
+
+    <div class="brand">
+        <div class="brand-icon">🎓</div>
+        <div class="brand-name"
+             data-en="PM Internship Scheme"
+             data-hi="पीएम इंटर्नशिप योजना"
+             data-ta="பிஎம் இன்டர்ன்ஷிப் திட்டம்"
+             data-te="పిఎం ఇంటర్న్‌షిప్ పథకం"
+             data-kn="ಪಿಎಂ ಇಂಟರ್ನ್‌ಶಿಪ್ ಯೋಜನೆ"
+             data-ml="പിഎം ഇന്റേൺഷിപ്പ് പദ്ധതി">PM Internship Scheme</div>
+        <div class="brand-sub"
+             data-en="AI-powered internship recommendations"
+             data-hi="AI-आधारित इंटर्नशिप सिफारिशें"
+             data-ta="AI-இயங்கும் இன்டர்ன்ஷிப் பரிந்துரைகள்"
+             data-te="AI-ఆధారిత ఇంటర్న్‌షిప్ సిఫార్సులు"
+             data-kn="AI-ಚಾಲಿತ ಇಂಟರ್ನ್‌ಶಿಪ್ ಶಿಫಾರಸುಗಳು"
+             data-ml="AI-ഊർജിത ഇന്റേൺഷിപ്പ് ശുപാർശകൾ">
+            AI-powered internship recommendations
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <button class="tab-btn active" id="tab-login"
+                onclick="switchTab('login')"
+                data-en="Sign In" data-hi="साइन इन"
+                data-ta="உள்நுழைய" data-te="లాగిన్"
+                data-kn="ಲಾಗಿನ್" data-ml="ലോഗിൻ">Sign In</button>
+        <button class="tab-btn" id="tab-signup"
+                onclick="switchTab('signup')"
+                data-en="Sign Up" data-hi="साइन अप"
+                data-ta="பதிவு செய்" data-te="సైన్ అప్"
+                data-kn="ಸೈನ್ ಅಪ್" data-ml="സൈൻ അപ്">Sign Up</button>
+    </div>
+
+    <!-- LOGIN SECTION -->
+    <div class="form-section active" id="section-login">
+
+        <!-- Success message after signup -->
+        <div class="success-msg"
+             th:if="${signupSuccess}"
+             th:text="${signupSuccess}">
+            ✅ Account created! Please sign in.
+        </div>
+
+        <!-- Error message -->
+        <div class="error-msg"
+             th:if="${loginError}"
+             th:text="${loginError}"></div>
+
+        <form action="/login" method="post">
+            <div class="field-group">
+                <label class="field-label"
+                       data-en="Email Address" data-hi="ईमेल"
+                       data-ta="மின்னஞ்சல்" data-te="ఇమెయిల్"
+                       data-kn="ಇಮೇಲ್" data-ml="ഇമെയിൽ">Email Address</label>
+                <input type="email" name="email" class="field-input" required
+                       data-ph-en="Enter your email"
+                       data-ph-hi="ईमेल दर्ज करें"
+                       data-ph-ta="மின்னஞ்சல் உள்ளிடுங்கள்"
+                       data-ph-te="ఇమెయిల్ నమోదు చేయండి"
+                       data-ph-kn="ಇಮೇಲ್ ನಮೂದಿಸಿ"
+                       data-ph-ml="ഇമെയിൽ നൽകുക"
+                       placeholder="Enter your email">
+            </div>
+            <div class="field-group">
+                <label class="field-label"
+                       data-en="Password" data-hi="पासवर्ड"
+                       data-ta="கடவுச்சொல்" data-te="పాస్‌వర్డ్"
+                       data-kn="ಪಾಸ್‌ವರ್ಡ್" data-ml="പാസ്‌വേഡ്">Password</label>
+                <input type="password" name="password" class="field-input" required
+                       data-ph-en="Enter your password"
+                       data-ph-hi="पासवर्ड दर्ज करें"
+                       data-ph-ta="கடவுச்சொல் உள்ளிடுங்கள்"
+                       data-ph-te="పాస్‌వర్డ్ నమోదు చేయండి"
+                       data-ph-kn="ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ"
+                       data-ph-ml="പാസ്‌വേഡ് നൽകുക"
+                       placeholder="Enter your password">
+            </div>
+            <button type="submit" class="submit-btn"
+                    data-en="Sign In →" data-hi="साइन इन →"
+                    data-ta="உள்நுழை →" data-te="లాగిన్ →"
+                    data-kn="ಲಾಗಿನ್ →" data-ml="ലോഗിൻ →">Sign In →</button>
+        </form>
+
+        <div class="switch-link">
+            <span data-en="New here?" data-hi="नए हैं?"
+                  data-ta="புதியவரா?" data-te="కొత్తగా వచ్చారా?"
+                  data-kn="ಹೊಸಬರೇ?" data-ml="പുതിയ ആളോ?">New here?</span>
+            <a href="#" onclick="switchTab('signup')"
+               data-en="Create account" data-hi="खाता बनाएं"
+               data-ta="கணக்கு உருவாக்கு" data-te="ఖాతా సృష్టించు"
+               data-kn="ಖಾತೆ ತೆರೆಯಿರಿ" data-ml="അക്കൗണ്ട് സൃഷ്ടിക്കുക">Create account</a>
+        </div>
+    </div>
+
+    <!-- SIGNUP SECTION -->
+    <div class="form-section" id="section-signup">
+
+        <div class="error-msg"
+             th:if="${signupError}"
+             th:text="${signupError}"></div>
+
+        <form action="/signup" method="post">
+            <div class="field-group">
+                <label class="field-label"
+                       data-en="Full Name" data-hi="पूरा नाम"
+                       data-ta="முழு பெயர்" data-te="పూర్తి పేరు"
+                       data-kn="ಪೂರ್ಣ ಹೆಸರು" data-ml="പൂർണ്ണ നാമം">Full Name</label>
+                <input type="text" name="name" class="field-input" required
+                       data-ph-en="Enter your full name"
+                       data-ph-hi="पूरा नाम दर्ज करें"
+                       data-ph-ta="முழு பெயரை உள்ளிடுங்கள்"
+                       data-ph-te="పూర్తి పేరు నమోదు చేయండి"
+                       data-ph-kn="ಪೂರ್ಣ ಹೆಸರು ನಮೂದಿಸಿ"
+                       data-ph-ml="പൂർണ്ണ നാമം നൽകുക"
+                       placeholder="Enter your full name">
+            </div>
+            <div class="field-group">
+                <label class="field-label"
+                       data-en="Email Address" data-hi="ईमेल"
+                       data-ta="மின்னஞ்சல்" data-te="ఇమెయిల్"
+                       data-kn="ಇಮೇಲ್" data-ml="ഇമെയിൽ">Email Address</label>
+                <input type="email" name="email" class="field-input" required
+                       data-ph-en="Enter your email"
+                       data-ph-hi="ईमेल दर्ज करें"
+                       data-ph-ta="மின்னஞ்சல் உள்ளிடுங்கள்"
+                       data-ph-te="ఇమెయిల్ నమోదు చేయండి"
+                       data-ph-kn="ಇಮೇಲ್ ನಮೂದಿಸಿ"
+                       data-ph-ml="ഇമെയിൽ നൽകുക"
+                       placeholder="Enter your email">
+            </div>
+            <div class="field-group">
+                <label class="field-label"
+                       data-en="Password" data-hi="पासवर्ड"
+                       data-ta="கடவுச்சொல்" data-te="పాస్‌వర్డ్"
+                       data-kn="ಪಾಸ್‌ವರ್ಡ್" data-ml="പാസ്‌വേഡ്">Password</label>
+                <input type="password" name="password" class="field-input" required
+                       data-ph-en="Create a password"
+                       data-ph-hi="पासवर्ड बनाएं"
+                       data-ph-ta="கடவுச்சொல் உருவாக்கவும்"
+                       data-ph-te="పాస్‌వర్డ్ సృష్టించండి"
+                       data-ph-kn="ಪಾಸ್‌ವರ್ಡ್ ರಚಿಸಿ"
+                       data-ph-ml="പാസ്‌വേഡ് സൃഷ്ടിക്കുക"
+                       placeholder="Create a password">
+            </div>
+            <button type="submit" class="submit-btn"
+                    data-en="Create Account →" data-hi="खाता बनाएं →"
+                    data-ta="கணக்கு உருவாக்கு →" data-te="ఖాతా సృష్టించు →"
+                    data-kn="ಖಾತೆ ತೆರೆಯಿರಿ →" data-ml="അക്കൗണ്ട് സൃഷ്ടിക്കുക →">
+                Create Account →
+            </button>
+        </form>
+
+        <div class="switch-link">
+            <span data-en="Already have an account?" data-hi="पहले से खाता है?"
+                  data-ta="ஏற்கனவே கணக்கு உள்ளதா?" data-te="ఇప్పటికే ఖాతా ఉందా?"
+                  data-kn="ಈಗಾಗಲೇ ಖಾತೆ ಇದೆಯೇ?" data-ml="ഇതിനകം അക്കൗണ്ട് ഉണ്ടോ?">
+                Already have an account?
+            </span>
+            <a href="#" onclick="switchTab('login')"
+               data-en="Sign in" data-hi="साइन इन"
+               data-ta="உள்நுழைய" data-te="లాగిన్"
+               data-kn="ಲಾಗಿನ್" data-ml="ലോഗിൻ">Sign in</a>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const LANGS = ['en','hi','ta','te','kn','ml'];
+
+    function switchTab(tab) {
+        document.getElementById('section-login').classList.toggle('active', tab === 'login');
+        document.getElementById('section-signup').classList.toggle('active', tab === 'signup');
+        document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+        document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
+    }
+
+    window.onload = function() {
+        const activeTab = /*[[${activeTab ?: 'login'}]]*/ 'login';
+        if (activeTab === 'signup') switchTab('signup');
+        const saved = localStorage.getItem('lang');
+        if (saved && LANGS.includes(saved)) setLang(saved);
+    };
+
+    function setLang(lang) {
+        document.querySelectorAll('[data-en]').forEach(el => {
+            const val = el.getAttribute('data-' + lang);
+            if (!val) return;
+            if (el.tagName === 'BUTTON') el.textContent = val;
+            else if (el.tagName !== 'INPUT') el.textContent = val;
+        });
+        document.querySelectorAll('[data-ph-' + lang + ']').forEach(el => {
+            el.placeholder = el.getAttribute('data-ph-' + lang);
+        });
+        LANGS.forEach(l => {
+            const btn = document.getElementById('btn-' + l);
+            if (btn) btn.classList.toggle('active', l === lang);
+        });
+        localStorage.setItem('lang', lang);
+    }
+</script>
+</body>
+</html>

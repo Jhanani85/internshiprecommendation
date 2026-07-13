@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Application Submitted</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #111, #1a1a1a, #000);
+            color: white; min-height: 100vh;
+            display: flex; align-items: center;
+            justify-content: center; padding: 20px;
+        }
+        .card {
+            background: #1c1c1c; border-radius: 20px;
+            padding: 40px 30px; width: 100%; max-width: 480px;
+            box-shadow: 0 0 25px rgba(0,200,100,0.2);
+            border: 1px solid rgba(0,200,100,0.2);
+            text-align: center;
+        }
+        .success-icon { font-size: 64px; margin-bottom: 16px; }
+        h2 { color: #00c864; font-size: 22px; margin-bottom: 8px; }
+        .status {
+            color: #00c864; font-size: 15px;
+            font-weight: bold; margin-bottom: 24px;
+        }
+        .detail-row {
+            display: flex; justify-content: space-between;
+            padding: 10px 0; border-bottom: 1px solid #2a2a2a;
+            font-size: 14px;
+        }
+        .detail-row:last-of-type { border-bottom: none; }
+        .detail-label { color: #888; }
+        .detail-value { color: white; font-weight: bold; }
+        .home-btn {
+            display: inline-block; margin-top: 28px;
+            padding: 12px 32px; background: gold;
+            color: black; border-radius: 30px;
+            font-weight: bold; font-size: 15px;
+            text-decoration: none; transition: background 0.2s;
+        }
+        .home-btn:hover { background: #ffcc00; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="success-icon">🎉</div>
+    <h2>Application Submitted!</h2>
+    <div class="status">Status: Under Review</div>
+
+    <p style="color:#aaa; font-size:13px; margin-bottom:20px;">
+        Your application has been received. The company will contact you shortly.
+    </p>
+
+    <a href="/" class="home-btn">🏠 Back Home</a>
+</div>
+</body>
+</html>

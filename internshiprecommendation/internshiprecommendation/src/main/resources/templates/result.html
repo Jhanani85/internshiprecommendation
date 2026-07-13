@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Your Recommendations</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #111, #1a1a1a, #000);
+            color: white; min-height: 100vh; padding: 20px;
+        }
+        .lang-bar {
+            max-width: 700px; margin: 0 auto 15px;
+            display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end;
+        }
+        .lang-btn {
+            background: transparent; border: 1px solid gold; color: gold;
+            padding: 5px 12px; border-radius: 20px; cursor: pointer; font-size: 13px;
+        }
+        .lang-btn.active { background: gold; color: black; font-weight: bold; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .header h1 { color: gold; font-size: 24px; margin-bottom: 6px; }
+        .header p { color: #aaa; font-size: 14px; }
+        .match-count {
+            display: inline-block; background: rgba(255,215,0,0.15);
+            border: 1px solid gold; color: gold;
+            padding: 6px 16px; border-radius: 20px; font-size: 13px; margin-top: 8px;
+        }
+        .container { max-width: 700px; margin: 0 auto; }
+        .card {
+            background: #1c1c1c; border-radius: 16px; padding: 22px;
+            margin-bottom: 16px; border: 1px solid #333; position: relative;
+        }
+        .card:hover { box-shadow: 0 0 18px rgba(255,215,0,0.35); }
+        .card-rank {
+            position: absolute; top: 16px; right: 16px; background: gold;
+            color: black; font-weight: bold; font-size: 12px;
+            padding: 4px 10px; border-radius: 12px;
+        }
+        .card h2 { color: gold; font-size: 18px; margin-bottom: 12px; padding-right: 60px; }
+        .score-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .score-label { font-size: 12px; color: #aaa; white-space: nowrap; }
+        .score-bar-bg { flex: 1; background: #333; border-radius: 10px; height: 8px; overflow: hidden; }
+        .score-bar-fill { height: 100%; background: linear-gradient(90deg, gold, #ffcc00); border-radius: 10px; }
+        .score-value { font-size: 12px; color: gold; font-weight: bold; white-space: nowrap; }
+        .why-section { margin-bottom: 14px; }
+        .why-title { font-size: 12px; color: #888; margin-bottom: 6px; }
+        .tag-row { display: flex; flex-wrap: wrap; gap: 6px; }
+        .tag { padding: 4px 10px; border-radius: 15px; font-size: 12px; font-weight: bold; }
+        .tag-sector { background: rgba(255,165,0,0.15); border: 1px solid orange; color: orange; }
+        .tag-skill { background: rgba(0,200,100,0.12); border: 1px solid #00c864; color: #00c864; }
+        .tag-location { background: rgba(100,150,255,0.12); border: 1px solid #6496ff; color: #6496ff; }
+        .card-details { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+        .detail-item { display: flex; align-items: center; gap: 7px; font-size: 14px; color: #ccc; }
+        .apply-btn {
+            display: inline-block; background: gold; color: black; font-weight: bold;
+            font-size: 14px; padding: 10px 24px; border-radius: 25px;
+            text-decoration: none; transition: background 0.2s;
+        }
+        .apply-btn:hover { background: #ffcc00; }
+        .no-results { text-align: center; padding: 50px 20px; color: #aaa; }
+        .back-btn { display: block; text-align: center; margin: 20px auto 0; color: #aaa; font-size: 14px; text-decoration: none; }
+        .back-btn:hover { color: gold; }
+        @media (max-width: 480px) {
+            .card-details { grid-template-columns: 1fr; }
+            .header h1 { font-size: 20px; }
+            .lang-btn { font-size: 11px; padding: 4px 9px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="lang-bar">
+    <button class="lang-btn active" onclick="setLang('en')" id="btn-en">English</button>
+    <button class="lang-btn" onclick="setLang('hi')" id="btn-hi">हिंदी</button>
+    <button class="lang-btn" onclick="setLang('ta')" id="btn-ta">தமிழ்</button>
+    <button class="lang-btn" onclick="setLang('te')" id="btn-te">తెలుగు</button>
+    <button class="lang-btn" onclick="setLang('kn')" id="btn-kn">ಕನ್ನಡ</button>
+    <button class="lang-btn" onclick="setLang('ml')" id="btn-ml">മലയാളം</button>
+</div>
+
+<div class="header">
+    <h1>🎯 <span
+            data-en="Your Recommended Internships"
+            data-hi="आपके लिए अनुशंसित इंटर्नशिप"
+            data-ta="உங்களுக்கான பரிந்துரைக்கப்பட்ட இன்டர்ன்ஷிப்"
+            data-te="మీకు సిఫార్సు చేసిన ఇంటర్న్‌షిప్‌లు"
+            data-kn="ನಿಮಗೆ ಶಿಫಾರಸು ಮಾಡಿದ ಇಂಟರ್ನ್‌ಶಿಪ್‌ಗಳು"
+            data-ml="നിങ്ങൾക്ക് ശുപാർശ ചെയ്ത ഇന്റേൺഷിപ്പുകൾ">
+        Your Recommended Internships
+    </span></h1>
+    <p th:if="${user != null}">
+        <span data-en="Based on your profile,"
+              data-hi="आपकी प्रोफ़ाइल के आधार पर,"
+              data-ta="உங்கள் சுயவிவரத்தின் அடிப்படையில்,"
+              data-te="మీ ప్రొఫైల్ ఆధారంగా,"
+              data-kn="ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ ಆಧಾರದ ಮೇಲೆ,"
+              data-ml="നിങ്ങളുടെ പ്രൊഫൈൽ അടിസ്ഥാനത്തിൽ,">Based on your profile,</span>
+        <strong th:text="${user.name}"></strong>
+    </p>
+    <span class="match-count">
+        ✅ <span th:text="${#lists.size(results)}"></span>
+        <span data-en="best matches found" data-hi="सर्वश्रेष्ठ मिलान मिले"
+              data-ta="சிறந்த பொருத்தங்கள் கண்டறியப்பட்டன"
+              data-te="ఉత్తమ సరిపోలికలు కనుగొనబడ్డాయి"
+              data-kn="ಉತ್ತಮ ಹೊಂದಾಣಿಕೆಗಳು ಕಂಡುಬಂದಿವೆ"
+              data-ml="മികച്ച പൊരുത്തങ്ങൾ കണ്ടെത്തി">best matches found</span>
+    </span>
+</div>
+
+<div class="container">
+
+    <div class="no-results" th:if="${#lists.isEmpty(results)}">
+        <div style="font-size:48px;margin-bottom:15px">😕</div>
+        <p data-en="No matching internships found."
+           data-hi="कोई मिलान इंटर्नशिप नहीं मिली।"
+           data-ta="பொருந்தும் இன்டர்ன்ஷிப் எதுவும் கிடைக்கவில்லை."
+           data-te="సరిపోలే ఇంటర్న్‌షిప్‌లు ఏవీ కనుగొనబడలేదు."
+           data-kn="ಯಾವುದೇ ಹೊಂದಾಣಿಕೆಯ ಇಂಟರ್ನ್‌ಶಿಪ್‌ಗಳು ಕಂಡುಬಂದಿಲ್ಲ."
+           data-ml="ഒത്തുചേരുന്ന ഇന്റേൺഷിപ്പുകൾ ഒന്നും കണ്ടെത്തിയില്ല.">
+            No matching internships found.
+        </p>
+        <a href="/" class="apply-btn" style="margin-top:20px;display:inline-block"
+           data-en="🔙 Go Back" data-hi="🔙 वापस जाएं"
+           data-ta="🔙 திரும்பு" data-te="🔙 వెనకకు"
+           data-kn="🔙 ಹಿಂತಿರುಗಿ" data-ml="🔙 തിരിച്ചുപോകൂ">🔙 Go Back</a>
+    </div>
+
+    <div th:each="result, iterStat : ${results}">
+        <div class="card">
+            <span class="card-rank" th:text="'#' + ${iterStat.count}"></span>
+            <h2 th:text="${result.internship.title}"></h2>
+
+            <div class="score-row">
+                <span class="score-label"
+                      data-en="Match Score" data-hi="मिलान स्कोर"
+                      data-ta="பொருத்த மதிப்பெண்" data-te="మ్యాచ్ స్కోర్"
+                      data-kn="ಹೊಂದಾಣಿಕೆ ಸ್ಕೋರ್" data-ml="മാച്ച് സ്കോർ">Match Score</span>
+                <div class="score-bar-bg">
+                    <div class="score-bar-fill" th:style="'width:' + ${result.scorePercent} + '%'"></div>
+                </div>
+                <span class="score-value" th:text="${result.score} + '/' + ${result.maxScore}"></span>
+            </div>
+
+            <div class="why-section">
+                <div class="why-title"
+                     data-en="Why recommended:" data-hi="क्यों अनुशंसित:"
+                     data-ta="ஏன் பரிந்துரைக்கப்பட்டது:" data-te="ఎందుకు సిఫార్సు:"
+                     data-kn="ಏಕೆ ಶಿಫಾರಸು:" data-ml="എന്തുകൊണ്ട് ശുപാർശ:">Why recommended:</div>
+                <div class="tag-row">
+                    <span class="tag tag-sector" th:if="${result.sectorMatched}"
+                          data-en="✓ Sector match" data-hi="✓ क्षेत्र मिलान"
+                          data-ta="✓ துறை பொருத்தம்" data-te="✓ రంగం సరిపోలిక"
+                          data-kn="✓ ವಲಯ ಹೊಂದಾಣಿಕೆ" data-ml="✓ മേഖല പൊരുത്തം">✓ Sector match</span>
+                    <span class="tag tag-location" th:if="${result.locationMatched}"
+                          data-en="✓ Location match" data-hi="✓ स्थान मिलान"
+                          data-ta="✓ இட பொருத்தம்" data-te="✓ స్థాన సరిపోలిక"
+                          data-kn="✓ ಸ್ಥಳ ಹೊಂದಾಣಿಕೆ" data-ml="✓ സ്ഥാന പൊരുത്തം">✓ Location match</span>
+                    <span class="tag tag-skill"
+                          th:each="skill : ${result.matchedSkills}"
+                          th:text="'✓ ' + ${skill}"></span>
+                </div>
+            </div>
+
+            <div class="card-details">
+                <div class="detail-item">🏢 <span th:text="${result.internship.company}"></span></div>
+                <div class="detail-item">📍 <span th:text="${result.internship.location}"></span></div>
+                <div class="detail-item">⏱️ <span th:text="${result.internship.duration}"></span></div>
+                <div class="detail-item">
+                    💰 ₹<span th:text="${result.internship.stipend}"></span>/
+                    <span data-en="month" data-hi="माह" data-ta="மாதம்"
+                          data-te="నెల" data-kn="ತಿಂಗಳು" data-ml="മാസം">month</span>
+                </div>
+                <div class="detail-item">🏷️ <span th:text="${result.internship.sector}"></span></div>
+            </div>
+
+            <a href="/apply" class="apply-btn"
+               data-en="Apply Now →" data-hi="अभी आवेदन करें →"
+               data-ta="இப்போது விண்ணப்பிக்கவும் →" data-te="ఇప్పుడు దరఖాస్తు చేయండి →"
+               data-kn="ಈಗ ಅರ್ಜಿ ಸಲ್ಲಿಸಿ →" data-ml="ഇപ്പോൾ അപേക്ഷിക്കൂ →">Apply Now →</a>
+        </div>
+    </div>
+
+    <a href="/" class="back-btn"
+       data-en="← Search Again" data-hi="← फिर से खोजें"
+       data-ta="← மீண்டும் தேடு" data-te="← మళ్ళీ వెతకండి"
+       data-kn="← ಮತ್ತೆ ಹುಡುಕಿ" data-ml="← വീണ്ടും തിരയൂ">← Search Again</a>
+
+</div>
+
+<script>
+    const LANGS = ['en','hi','ta','te','kn','ml'];
+
+    function setLang(lang) {
+        document.querySelectorAll('[data-en]').forEach(el => {
+            const val = el.getAttribute('data-' + lang);
+            if (val) el.textContent = val;
+        });
+        LANGS.forEach(l => {
+            const btn = document.getElementById('btn-' + l);
+            if (btn) btn.classList.toggle('active', l === lang);
+        });
+        localStorage.setItem('lang', lang);
+    }
+
+    window.onload = function() {
+        const saved = localStorage.getItem('lang');
+        if (saved && LANGS.includes(saved)) setLang(saved);
+    };
+</script>
+</body>
+</html>
